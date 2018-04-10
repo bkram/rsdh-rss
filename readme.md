@@ -19,7 +19,7 @@ python3 rsdh-rss.py -c rsdh-ssl.cfg
 ## Configuration files
 |Config file|Show Title|
 |------|----|
-|rsdh-disco.cfg|Den Haag Disco Dance Department|
+|rsdh-disco.cfg|Disco Dance Department|
 |rsdh-doucheco.cfg|DoucheCo|
-|rsdh-iventi.cfg| I Venti d'Azzurro|
+|rsdh-iventi.cfg|I Venti d'Azzurro|
 |rsdh-ssl.cfg|Radio Stad Den Haag Sundaynight Live|
