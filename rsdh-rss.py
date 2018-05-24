@@ -71,7 +71,7 @@ def detectdate(description):
     return airdate
 
 
-def getshows(rsdh, showdir, permalink=True, **kwargs):
+def getshows(rsdh, showdir, permalink, **kwargs):
     rss = []
     dirlist = []
     match = ''
