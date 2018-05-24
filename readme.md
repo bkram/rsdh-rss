@@ -3,8 +3,11 @@
 Since Radio Stad Den Haag does not provide RSS links by themselves, but I like to listen to their shows on the go I have created this feed generator, it crawls their stackstorage download section and creates the RSS feed.
 
 ## Requirements
+
 - python3
+
 ### Python modules (via pip3 install)
+
 - argpar
 - configparser
 - datetime
@@ -12,11 +15,14 @@ Since Radio Stad Den Haag does not provide RSS links by themselves, but I like t
 - urllib
 - requests
 - rfeed
+
 ## Example
+
 ```bash
 python3 rsdh-rss.py -c rsdh-ssl.cfg
 ```
 ## Configuration files
+
 |Config file|Show Title|
 |------|----|
 |rsdh-disco.cfg|Disco Dance Department|

@@ -5,19 +5,13 @@ import argparse
 import configparser
 import datetime
 import hashlib
-import urllib
-import requests
 import rfeed
+from stack import Stack
 
 
 def getargs():
     parser = argparse.ArgumentParser(description='RSDH RSS feed generator.')
-    parser.add_argument(
-        '-c',
-        '--config',
-        help='Configuration file',
-        dest='config',
-        required=True)
+    parser.add_argument('-c', '--config', help='Configuration file', dest='config', required=True)
     args = parser.parse_args()
     return args
 
@@ -47,10 +41,8 @@ def createitem(filename, title, pubdate, url, size, mediatype, permalink):
         title=title,
         pubDate=pubdate,
         description=title,
-        enclosure=rfeed.Enclosure(
-            url=url, length=size, type=mediatype),
-        guid=rfeed.Guid(
-            guid, isPermaLink=permalink))
+        enclosure=rfeed.Enclosure(url=url, length=size, type=mediatype),
+        guid=rfeed.Guid(guid, isPermaLink=permalink))
     return item
 
 
@@ -68,6 +60,7 @@ def createfeed(rss, title, description, language, image, link):
 
 
 def detectdate(description):
+    airdate = None
     for item in description.replace('_', ' ').split(' '):
         if len(item) == 8 and item.startswith('20'):
             try:
@@ -75,63 +68,29 @@ def detectdate(description):
             except Exception as e:
                 print('Error: {} : cannot convert {} into datetime object [{}]'.
                       format(description, item, e))
-                airdate = None
     return airdate
 
 
-def downloadurl(path, stacksite, showsparams):
-    preview = 'https://{}.stackstorage.com/public-share/{}/preview'.format(
-        stacksite, showsparams['token'])
-    previewparams = {'path': path, 'mode': 'full'}
-    url = preview + '?' + urllib.parse.urlencode(previewparams)
-    return url
-
-
-def getshows(showsurl, showsparams, showdir, stacksite):
+def getshows(rsdh, showdir, permalink=True, **kwargs):
     rss = []
-    for year in range(datetime.datetime.now().year, 2007, -1):
-        showsparams['dir'] = '/{}/'.format(showdir) + str(year)
-        r = requests.get(showsurl, params=showsparams)
-        resp = requests.get(r.url)
-        if resp.status_code == 200:
-            shows = resp.json()
-            for show in shows['nodes']:
-                if show['mimetype'] == 'audio/mpeg':
-                    path = show['path']
-                    filename = path.split('/')[-1]
-                    filesize = show['fileSize']
-                    filetype = show['mediaType']
-                    description = filename.split('.')[0].replace('-', ' ')
-                    showdate = detectdate(description)
-                    fileurl = downloadurl(path, stacksite, showsparams)
-                    rss.append(
-                        createitem(
-                            filename,
-                            description,
-                            showdate,
-                            fileurl,
-                            filesize,
-                            filetype,
-                            permalink=True))
-    return rss
-
-
-def getlatest(showsurl, showsparams, stacksite, latestmatch):
-    rss = []
-    showsparams['dir'] = '/- LATEST RECORDINGS/'
-    r = requests.get(showsurl, params=showsparams)
-    resp = requests.get(r.url)
-    if resp.status_code == 200:
-        shows = resp.json()
-        for show in shows['nodes']:
-            if show['mimetype'] == 'audio/mpeg' and latestmatch in show['path']:
-                path = show['path']
-                filename = path.split('/')[-1]
-                filesize = show['fileSize']
-                filetype = show['mediaType']
+    dirlist = []
+    match = ''
+    if 'match' in kwargs:
+        match = kwargs['match']
+    for i in rsdh.list(directory=showdir):
+        if i['Type'] == 'Dir':
+            dirlist.append(i['Name'])
+    if not len(dirlist):
+        dirlist.append(showdir)
+    for shows in dirlist:
+        for show in rsdh.list(directory=shows):
+            if show['Type'] == 'audio/mpeg' and match in show['Path']:
+                filename = show['Path'].split('/')[-1]
+                filesize = show['Size']
+                filetype = show['Mediatype']
                 description = filename.split('.')[0].replace('-', ' ')
                 showdate = detectdate(description)
-                fileurl = downloadurl(path, stacksite, showsparams)
+                fileurl = rsdh.downloadurl(show['Path'])
                 rss.append(
                     createitem(
                         filename,
@@ -140,31 +99,18 @@ def getlatest(showsurl, showsparams, stacksite, latestmatch):
                         fileurl,
                         filesize,
                         filetype,
-                        permalink=False))
-        return rss
+                        permalink=permalink))
+    return rss
 
 
 def main():
     args = getargs()
-    stacksite, token, showdir, title, link, description, language, image, latestmatch, output = getconfig(
-        args)
-    showsurl = 'https://{}.stackstorage.com/public-share/{}/list'.format(
-        stacksite, token)
-    showsparams = {
-        'public': 'true',
-        'token': token,
-        'type': 'folder',
-        'offset': '0',
-        'limit': '5000',
-        'sortBy': 'mtime',
-        'order': 'desc',
-        'query': ''
-    }
-
-    rssfeed = getlatest(showsurl, showsparams, stacksite, latestmatch) \
-              + getshows(showsurl, showsparams, showdir, stacksite)
+    stacksite, token, showdir, title, link, description, language, image, latestmatch, output = getconfig(args)
+    rsdh = Stack(stacksite=stacksite, token=token)
+    rssallshows = getshows(rsdh, showdir, permalink=True)
+    rsslatest = getshows(rsdh, '/- LATEST RECORDINGS/', permalink=False, match=latestmatch)
     f = open(output, 'w')
-    f.write(createfeed(rssfeed, title, description, language, image, link))
+    f.write(createfeed(rsslatest + rssallshows, title, description, language, image, link))
     f.close()
 
 
