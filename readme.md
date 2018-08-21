@@ -1,4 +1,10 @@
 # Preface
+Currently no longer working.
+
+It seems Stack now requires a valid *cookie* to do a direct download, since we create static url's for the RSS feed this no longer works :( .
+So the feed gets created but it is no longer possible to download the file in the podcast app.
+
+At some point I will update this project to download an x amount of shows while crawling to be able to serve them locally.
 
 Since Radio Stad Den Haag does not provide RSS links by themselves, but I like to listen to their shows on the go I have created this feed generator, it crawls their stackstorage download section and creates the RSS feed.
 
@@ -15,6 +21,7 @@ Since Radio Stad Den Haag does not provide RSS links by themselves, but I like t
 - urllib
 - requests
 - rfeed
+- mutagen
 
 ## Example
 
