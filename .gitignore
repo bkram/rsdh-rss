@@ -99,3 +99,11 @@ ENV/
 
 # mypy
 .mypy_cache/
+/.vscode/
+.idea/
+.vscode/
+*.xml
+/.vscode/launch.json
+/venv36/
+/rsdh/
+rsdh/
