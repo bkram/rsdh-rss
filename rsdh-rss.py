@@ -5,7 +5,10 @@ import argparse
 import configparser
 import datetime
 import hashlib
+from pathlib import Path
+
 import rfeed
+
 from stack import Stack
 
 
@@ -30,7 +33,10 @@ def getconfig(args):
         image = config.get('show', 'image')
         latestmatch = config.get('show', 'latestmatch')
         output = config.get('file', 'output')
-        return stacksite, token, showdir, title, link, description, language, image, latestmatch, output
+        localdir = config.get('local', 'location')
+        download = config.get('download', 'location')
+        return stacksite, token, showdir, title, link, description, language, \
+               image, latestmatch, output, localdir, download
     except Exception as e:
         exit('Configuration {}\n please check config file'.format(e))
 
@@ -59,6 +65,20 @@ def createfeed(rss, title, description, language, image, link):
     return feed.rss()
 
 
+def downloadurl(showdir, path, download):
+    url = '{}{}/{}'.format(
+        download, showdir.replace(" ", "%20"), path.split('/')[-1])
+    return url
+
+
+def downloadfile(rsdh, localdir, path):
+    filename = '{}/{}'.format(localdir, path.split('/')[-1])
+    if not Path(filename).is_file():
+        f = open(filename, mode='wb')
+        f.write(rsdh.download(path))
+        f.close()
+
+
 def detectdate(description):
     airdate = None
     for item in description.replace('_', ' ').split(' '):
@@ -71,10 +91,12 @@ def detectdate(description):
     return airdate
 
 
-def getshows(rsdh, showdir, permalink, **kwargs):
+def getshows(rsdh, showdir, localdir, download, permalink, **kwargs):
     rss = []
     dirlist = []
     match = ''
+    maxcount = 10
+    scount = 0
     if 'match' in kwargs:
         match = kwargs['match']
     for i in rsdh.list(directory=showdir):
@@ -84,13 +106,14 @@ def getshows(rsdh, showdir, permalink, **kwargs):
         dirlist.append(showdir)
     for shows in dirlist:
         for show in rsdh.list(directory=shows):
-            if show['Type'] == 'audio/mpeg' and match in show['Path']:
+            if scount < maxcount and show['Type'] == 'audio/mpeg' and match in show['Path']:
                 filename = show['Path'].split('/')[-1]
                 filesize = show['Size']
                 filetype = show['Mediatype']
                 description = filename.split('.')[0].replace('-', ' ')
                 showdate = detectdate(description)
-                fileurl = rsdh.downloadurl(show['Path'])
+                fileurl = downloadurl(localdir, show['Path'], download)
+                downloadfile(rsdh, localdir, show['Path'])
                 rss.append(
                     createitem(
                         filename,
@@ -100,15 +123,17 @@ def getshows(rsdh, showdir, permalink, **kwargs):
                         filesize,
                         filetype,
                         permalink=permalink))
+                scount += 1
     return rss
 
 
 def main():
     args = getargs()
-    stacksite, token, showdir, title, link, description, language, image, latestmatch, output = getconfig(args)
+    stacksite, token, showdir, title, link, description, language, image, \
+    latestmatch, output, localdir, download = getconfig(args)
     rsdh = Stack(stacksite=stacksite, token=token)
-    rssallshows = getshows(rsdh, showdir, permalink=True)
-    rsslatest = getshows(rsdh, '/- LATEST RECORDINGS/', permalink=False, match=latestmatch)
+    rssallshows = getshows(rsdh, showdir, localdir, download, permalink=True )
+    rsslatest = getshows(rsdh, '/- LATEST RECORDINGS/', localdir, download, permalink=True, match=latestmatch)
     f = open(output, 'w')
     f.write(createfeed(rsslatest + rssallshows, title, description, language, image, link))
     f.close()
