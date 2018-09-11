@@ -1,13 +1,14 @@
 import urllib
-from io import BytesIO
 
 import requests
-from mutagen.id3 import ID3
+from bs4 import BeautifulSoup
 
 
 class Stack:
     directory = ''
     path = ''
+    csrf = ''
+    s = requests.session()
 
     def __init__(self, stacksite, token):
         self.stacksite = stacksite
@@ -23,13 +24,22 @@ class Stack:
             'query': ''
         }
 
+        url = 'https://{}.stackstorage.com/s/{}'.format(self.stacksite, self.token)
+        mainpage = self.s.get(url)
+        soup = BeautifulSoup(mainpage.content, "lxml")
+        for meta in soup.findAll("meta"):
+            mstring = str(meta)
+            if "csrf-token" in (str(meta)):
+                self.csrf = mstring.split('"')[1]
+
     def list(self, directory):
         self.directory = directory
         self.params['dir'] = self.directory
+        session = self.s
         dirlist = ['httpd/unix-directory']
         url = 'https://{}.stackstorage.com/public-share/{}/list/{}'.format(
             self.stacksite, self.token, self.directory)
-        r = requests.get(url, params=self.params)
+        r = session.get(url, params=self.params)
         resp = requests.get(r.url)
         listing = []
         if resp.status_code == 200:
@@ -45,19 +55,15 @@ class Stack:
                              Size=item['fileSize'], Mediatype=item['mediaType']))
         return listing
 
-    def downloadurl(self, path):
-        preview = 'https://{}.stackstorage.com/public-share/{}/preview'.format(
+    def download(self, path):
+        session = self.s
+        preview = 'https://{}.stackstorage.com/public-share/{}/download?'.format(
             self.stacksite, self.token)
-        previewparams = {'path': path, 'mode': 'full'}
-        url = preview + '?' + urllib.parse.urlencode(previewparams)
-        return url
+        previewparams = {'download-path': path, 'CSRF-Token': self.csrf}
+        url = preview + urllib.parse.urlencode(previewparams)
+        resp = session.get(url)
 
-    def getid3tag(self, path, tag):
-        headers = {"Range": "bytes=0-2048"}
-        r = requests.get(self.downloadurl(path), headers=headers)
-        try:
-            idinfo = ID3(BytesIO(r.content))[tag].text[0]
-        except Exception as e:
-            print('Cannot parse id3: {}'.format(e))
-            idinfo = False
-        return idinfo
+        if resp.status_code == 200:
+            return resp.content
+        else:
+            print(resp.status_code)
