@@ -1,6 +1,6 @@
 # Preface
 
-Mirrors a show from RSDH from their stack storage and creates a rss feed for the downloaded episodes.
+Mirrors a show from RSDH from their Stackstorage.com site and creates a rss feed for the downloaded episodes.
 Does not do any housekeeping at the moment and the amount of episodes it does track is hardcoded as well.
 
 ## Requirements
@@ -17,6 +17,8 @@ Does not do any housekeeping at the moment and the amount of episodes it does tr
 - requests
 - rfeed
 - bs4
+
+Includes custom module "stack", to list and download from Transip's Stackstorage.com anonymously.
 
 ## Example
 

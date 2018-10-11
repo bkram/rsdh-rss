@@ -5,6 +5,12 @@ from bs4 import BeautifulSoup
 
 
 class Stack:
+    """
+    Interface with TransIP's Stack storage
+    Requires
+        - stacksite (subdomain before stackstorage.com)
+        - token (token as shown in url, after /s/)
+    """
     directory = ''
     path = ''
     csrf = ''
