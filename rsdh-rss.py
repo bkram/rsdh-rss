@@ -118,7 +118,7 @@ def getshows(rsdh, showdir, localdir, download, permalink, **kwargs):
     rss = []
     dirlist = []
     match = ""
-    maxcount = 5
+    maxcount = 10
     scount = 0
     if "match" in kwargs:
         match = kwargs["match"]
