@@ -1,5 +1,9 @@
 # Preface
 
+**Currently no longer working, RSDH no longer posts their shows on Stackstorage.**
+
+Maybe in the future I will try to fetch them from Mixcloud or Youtube instead.
+
 Mirrors a show from RSDH from their Stackstorage.com site and creates a rss feed for the downloaded episodes.
 Does not do any housekeeping at the moment and the amount of episodes it does track is hardcoded as well.
 
