@@ -30,8 +30,4 @@ python3 rsdh-rss.py -c rsdh-ssl.cfg
 
 ## Configuration files
 
-|Config file|Show Title|
-|------|----|
-|rsdh-doucheco.cfg|DoucheCo|
-|rsdh-iventi.cfg|I Venti d'Azzurro|
-|rsdh-ssl.cfg|Radio Stad Den Haag Sundaynight Live|
+See the config files in config/ for more details.
