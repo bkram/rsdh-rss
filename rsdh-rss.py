@@ -116,7 +116,7 @@ def detectdate(description):
 
 def getshows(rsdh, showdir, localdir, download, permalink, **kwargs):
     rss = []
-    dirlist = []
+    dirlist = ['/{}/'.format(showdir)]
     match = ""
     maxcount = 10
     scount = 0
@@ -129,10 +129,11 @@ def getshows(rsdh, showdir, localdir, download, permalink, **kwargs):
         dirlist.append(showdir)
     for shows in dirlist:
         for show in rsdh.list(directory=shows):
+
             if (
-                scount < maxcount
-                and show["Type"] == "audio/mpeg"
-                and match in show["Path"]
+                    scount < maxcount
+                    and show["Type"] == "audio/mpeg"
+                    and match.lower() in show["Path"].lower()
             ):
                 filename = show["Path"].split("/")[-1]
                 filesize = show["Size"]

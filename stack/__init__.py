@@ -43,22 +43,23 @@ class Stack:
         self.params['dir'] = self.directory
         session = self.s
         dirlist = ['httpd/unix-directory']
-        url = 'https://{}.stackstorage.com/public-share/{}/list/{}'.format(
+        url = 'https://{}.stackstorage.com/public-share/{}/list?dir={}'.format(
             self.stacksite, self.token, self.directory)
         r = session.get(url, params=self.params)
         resp = requests.get(r.url)
         listing = []
         if resp.status_code == 200:
             directory = resp.json()
-            for item in directory['nodes']:
-                if item['mimetype'] in dirlist:
-                    listing.append(
-                        dict(Type='Dir', Name=item['path'])
-                    )
-                else:
-                    listing.append(
-                        dict(Mimetype='File', Path=item['path'][1:], Type=item['mimetype'],
-                             Size=item['fileSize'], Mediatype=item['mediaType']))
+            if directory['nodes']:
+                for item in directory['nodes']:
+                    if item['mimetype'] in dirlist:
+                        listing.append(
+                            dict(Type='Dir', Name=item['path'])
+                        )
+                    else:
+                        listing.append(
+                            dict(Mimetype='File', Path=item['path'][1:], Type=item['mimetype'],
+                                 Size=item['fileSize'], Mediatype=item['mediaType']))
         return listing
 
     def download(self, path):

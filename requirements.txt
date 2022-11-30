@@ -1,0 +1,4 @@
+requests
+rfeed
+bs4
+lxml
