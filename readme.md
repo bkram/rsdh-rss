@@ -3,7 +3,7 @@
 Mirrors a show from RSDH from their Stackstorage.com site and creates a rss feed for the downloaded episodes.
 Does not do any housekeeping at the moment and the amount of episodes it does track is hardcoded as well.
 
-Working again since January 2020.
+Working again since November 2022.
 
 ## Requirements
 
