@@ -4,7 +4,9 @@
 import argparse
 import configparser
 import datetime
+import glob
 import hashlib
+import os
 from pathlib import Path
 
 import rfeed
@@ -118,8 +120,9 @@ def getshows(rsdh, showdir, localdir, download, permalink, **kwargs):
     rss = []
     dirlist = ['/{}/'.format(showdir)]
     match = ""
-    maxcount = 10
+    maxcount = 10000
     scount = 0
+
     if "match" in kwargs:
         match = kwargs["match"]
     for i in rsdh.list(directory=showdir):
@@ -127,6 +130,7 @@ def getshows(rsdh, showdir, localdir, download, permalink, **kwargs):
             dirlist.append(i["Name"])
     if not len(dirlist):
         dirlist.append(showdir)
+
     for shows in dirlist:
         for show in rsdh.list(directory=shows):
 
@@ -135,26 +139,50 @@ def getshows(rsdh, showdir, localdir, download, permalink, **kwargs):
                     and show["Type"] == "audio/mpeg"
                     and match.lower() in show["Path"].lower()
             ):
-                filename = show["Path"].split("/")[-1]
-                filesize = show["Size"]
-                filetype = show["Mediatype"]
-                description = filename.split(".")[0].replace("-", " ")
-                showdate = detectdate(description)
-                fileurl = downloadurl(localdir, show["Path"], download)
                 downloadfile(rsdh, localdir, show["Path"])
-                rss.append(
-                    createitem(
-                        filename,
-                        description,
-                        showdate,
-                        fileurl,
-                        filesize,
-                        filetype,
-                        permalink=permalink,
-                    )
-                )
-                print("Adding item {}".format(filename))
-                scount += 1
+
+    files = glob.glob('{}/*'.format(localdir))
+
+    for file in files:
+        filename = file.split("/")[-1]
+        description = filename.split(".")[0].replace("-", " ")
+        showdate = detectdate(description)
+        filesize = os.path.getsize(file)
+        fileurl = downloadurl(localdir, filename, download)
+        filetype = 'audio'
+        rss.append(
+            createitem(
+                filename,
+                description,
+                showdate,
+                fileurl,
+                filesize,
+                filetype,
+                permalink=permalink,
+            )
+        )
+        print("Adding item {}".format(filename))
+
+        # filename = show["Path"].split("/")[-1]
+        # filesize = show["Size"]
+        # filetype = show["Mediatype"]
+        # description = filename.split(".")[0].replace("-", " ")
+        # showdate = detectdate(description)
+        # fileurl = downloadurl(localdir, show["Path"], download)
+
+        # rss.append(
+        #     createitem(
+        #         filename,
+        #         description,
+        #         showdate,
+        #         fileurl,
+        #         filesize,
+        #         filetype,
+        #         permalink=permalink,
+        #     )
+        # )
+        # print("Adding item {}".format(filename))
+        # scount += 1
     return rss
 
 
