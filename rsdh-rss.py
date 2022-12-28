@@ -162,27 +162,6 @@ def getshows(rsdh, showdir, localdir, download, permalink, **kwargs):
             )
         )
         print("Adding item {}".format(filename))
-
-        # filename = show["Path"].split("/")[-1]
-        # filesize = show["Size"]
-        # filetype = show["Mediatype"]
-        # description = filename.split(".")[0].replace("-", " ")
-        # showdate = detectdate(description)
-        # fileurl = downloadurl(localdir, show["Path"], download)
-
-        # rss.append(
-        #     createitem(
-        #         filename,
-        #         description,
-        #         showdate,
-        #         fileurl,
-        #         filesize,
-        #         filetype,
-        #         permalink=permalink,
-        #     )
-        # )
-        # print("Adding item {}".format(filename))
-        # scount += 1
     return rss
 
 
