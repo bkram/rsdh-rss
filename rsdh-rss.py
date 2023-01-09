@@ -8,6 +8,7 @@ import glob
 import hashlib
 import os
 import sys
+
 from pathlib import Path
 
 import rfeed
@@ -152,6 +153,7 @@ def getshows(rsdh, showdir, localdir, download, permalink, **kwargs):
         filesize = os.path.getsize(file)
         fileurl = downloadurl(localdir, filename, download)
         filetype = 'audio'
+
         if filesize > 1024*1024*1024:
             rss.append(
                 createitem(
@@ -168,6 +170,7 @@ def getshows(rsdh, showdir, localdir, download, permalink, **kwargs):
         else:
             print('File with a too small size {}'.format(filename))
             sys.exit(1)
+
     return rss
 
 
