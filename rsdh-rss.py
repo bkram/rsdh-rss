@@ -154,7 +154,7 @@ def getshows(rsdh, showdir, localdir, download, permalink, **kwargs):
         fileurl = downloadurl(localdir, filename, download)
         filetype = 'audio'
 
-        if filesize > 1024*1024*1024:
+        if filesize > 1024*1024:
             rss.append(
                 createitem(
                     filename,
